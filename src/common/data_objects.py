@@ -2,71 +2,90 @@
 All data objects declared here.
 """
 
-import pathlib
 from common import config_reader, utils
 from common.custom_exceptions import CitadelIDPProcessingException
 
 
-class InputDocument(object):
+class Metadata(object):
     """
-    InputDocument represents the input document that needs to be analyzed.
+    Metadata, represents metadata attributes for the blob.
+    """
 
-    Raises :py:class:`CitadelIDPProcessingException` if neither validation_successful_local_file_path or validation_successful_document_url
+    status: str = None
+    name: str = None
+    url: str = None
+    blob_type: str = None
+    container: str = None
+    last_modified: str = None
+    created: str = None
+    content_md5: str = None
+    content_length: int = None
+    content_type: str = None
+
+    def __repr__(self):
+        return (
+            "\n"
+            + f"Status='{self.status}'"
+            + f"\nblob_path='{self.name}'"
+            + f"\nblob_url='{self.url}'"
+            + f"\nblob_type='{self.blob_type}'"
+            + f"\ncontainer_name='{self.container}'"
+            + f"\nlast_modified='{self.last_modified}'"
+            + f"\ncreatedOn='{self.created}'"
+            + f"\ncontentMD5='{self.content_md5}'"
+            + f"\ncontent_length_bytes='{self.content_length}'"
+            + f"\ncontent_type='{self.content_type}'"
+        )
+
+
+class InputBlob(object):
+    """
+    InputBlob represents the input blob that needs to be analyzed.
+
+    Raises :py:class:`CitadelIDPProcessingException` if validation_successful_document_url
     is provided to constructor
 
     """
 
-    # if this is a local file then the validation_successful_local_file_path should be filled
-    validation_successful_local_file_path = None
-    inprogress_local_file_path = None
-    is_local = False
+    validation_successful_blob_path: str = None
+    inprogress_blob_path: str = None
+    inprogress_blob_url: str = None
+    inprogress_blob_path: str = None
+    blob_type: str = None
+    form_recognizer_model_id: str = None
 
-    # validation_successful_document_url can be azure storage url or local file:// url. Always use validation_successful_local_file_path to check if document is local file or not.
-    validation_successful_document_url = None
-    inprogress_document_url = None
-
-    document_type = None
-    document_recognizer_model_id = None
-    form_recognizer_endpoint = None
-    
+    form_recognizer_endpoint: str = None
     # is_processed mean analysis was completed.
-    is_processed = False
-    
+    is_processed: bool = False
     # is_successful mean analysis was completed AND processing was successful
-    is_successful = False
-    
+    is_successful: bool = False
     # is_successful mean analysis was completed AND processing failed
-    is_failed = False
-    
-    result_json_data = None
+    is_failed: bool = False
+
+    failed_blob_path: str = None
+    successful_blob_path: str = None
+
+    result_json_data: str = None
+    meta: str = None
 
     # --------------------------------------------------------------------------------
-    
+
     def __init__(
         self,
-        document_type,
-        document_recognizer_model_id,
-        validation_successful_local_file_path=None,
-        validation_successful_document_url=None,
+        blob_type,
+        form_recognizer_model_id,
+        validation_successful_blob_path=None,
         form_recognizer_endpoint=None,
     ):
-        self.document_type = document_type
-        self.document_recognizer_model_id = document_recognizer_model_id
-        # either the validation_successful_local_file_path is provided or the validation_successful_document_url is provided
-        # if both are missing then raise exception
-        if utils.string_is_not_empty(validation_successful_local_file_path):
-            self.validation_successful_local_file_path = validation_successful_local_file_path
-            self.validation_successful_document_url = pathlib.Path(validation_successful_local_file_path).as_uri()
-            self.is_local = True
-        elif utils.string_is_not_empty(validation_successful_document_url):
-            # validation_successful_document_url needs to be present
-            self.validation_successful_document_url = validation_successful_document_url
-            self.validation_successful_local_file_path = None
-            self.is_local = False
+        self.blob_type = blob_type
+        self.form_recognizer_model_id = form_recognizer_model_id
+        if utils.string_is_not_empty(validation_successful_blob_path):
+            # validation_successful_blob_path needs to be present
+            self.validation_successful_blob_path = validation_successful_blob_path
         else:
             # raise exception
             raise CitadelIDPProcessingException(
-                "To create an InputDocument one of the validation_successful_local_file_path or the validation_successful_document_url is required, but none were provided."
+                "To create an InputBlob validation_successful_blob_path is required, but none was provided."
             )
 
         # if no custom form_recognizer_endpoint provided, use the main one in config.
@@ -77,18 +96,19 @@ class InputDocument(object):
 
     def __repr__(self):
         return (
-            "InputDocument("
-            + f"validation_successful_local_file_path='{self.validation_successful_local_file_path}'"
-            + f", inprogress_local_file_path='{self.inprogress_local_file_path}'"
-            + f", is_local='{self.is_local}'"
-            + f", validation_successful_document_url='{self.validation_successful_document_url}'"
-            + f", inprogress_document_url='{self.inprogress_document_url}'"
-            + f", document_type='{self.document_type}'"
-            + f", document_recognizer_model_id='{self.document_recognizer_model_id}'"
-            + f", form_recognizer_endpoint='{self.form_recognizer_endpoint}'"
-            + f", is_processed='{self.is_processed}'"
-            + f", is_successful='{self.is_successful}'"
-            + f", is_failed='{self.is_failed}'"
-            + f", result_json_data='{self.result_json_data}'"
+            "\nInputBlob("
+            + f"\nvalidation_successful_blob_path='{self.validation_successful_blob_path}'"
+            + f"\ninprogress_blob_path='{self.inprogress_blob_path}'"
+            + f"\ninprogress_blob_sas_url='{self.inprogress_blob_url}'"
+            + f"\nblob_type='{self.blob_type}'"
+            + f"\nform_recognizer_model_id='{self.form_recognizer_model_id}'"
+            + f"\nform_recognizer_endpoint='{self.form_recognizer_endpoint}'"
+            + f"\nis_processed='{self.is_processed}'"
+            + f"\nis_successful='{self.is_successful}'"
+            + f"\nis_failed='{self.is_failed}'"
+            + f"\nsuccessful_blob_path='{self.successful_blob_path}'"
+            + f"\nfailed_blob_path='{self.failed_blob_path}'"
+            + f"\nresult_json_data='{self.result_json_data}'"
             + ")"
+            + f"\n\nMetaData: {self.meta}\n"
         )

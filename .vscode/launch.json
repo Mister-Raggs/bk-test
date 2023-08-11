@@ -1,0 +1,25 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Citadel IDP Github - app.py",
+            "type": "python",
+            "request": "launch",
+            "program": "C:\\Users\\AshishChib\\Documents\\GitHub\\Citadel-IDP-Src\\src\\app.py",
+            "args": [
+                "-c",
+                "C:\\Users\\AshishChib\\Documents\\GitHub\\Citadel-IDP-Src\\config-files\\local\\citadel-idp-config.ini",
+                "-l",
+                "C:\\Users\\AshishChib\\Documents\\GitHub\\Citadel-IDP-Src\\logs\\citadel-idp-app.log"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "purpose": [
+                "debug-in-terminal"
+            ]
+        }
+    ]
+}

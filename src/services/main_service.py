@@ -2,7 +2,7 @@ import logging
 
 from common import config_reader
 from common.custom_exceptions import FolderMissingBusinessException, CitadelIDPProcessingException
-from services import local_file_system_handler, azure_blob_handler
+from services import blob_handler
 
 
 def start_flow():
@@ -14,26 +14,22 @@ def start_flow():
         env = "local"
 
     logging.info("Environment is set as '%s'", env)
+    processed_files_list = []
 
-    processed_files_list = None
-    if env.lower() != "prod":
-        use_azure_blog_storage = False
+    if env.lower() == "local" or env.lower() == "prod":
+        use_azure_blog_storage = True
         if config_reader.config_data.has_option("Main", "use-azure-blog-storage"):
             use_azure_blog_storage = config_reader.config_data.getboolean("Main", "use-azure-blog-storage")
 
-        if not use_azure_blog_storage:
+        if use_azure_blog_storage:
             try:
-                processed_files_list = local_file_system_handler.check_and_process_local_blob_storage()
+                processed_files_list = blob_handler.check_and_process_blob_storage()
             except FolderMissingBusinessException as fmbe:
                 raise CitadelIDPProcessingException(fmbe) from fmbe
             except Exception as ex:
                 raise CitadelIDPProcessingException(ex) from ex
         else:
-            # check and process azure blob storage
-            logging.info("Dummy msg: Processing Azure blob storage")
-
-    else:
-        processed_files_list = azure_blob_handler.check_and_process_blob_storage()
+            logging.exception("If env is local or prod use-azure-blog-storage needs to be true")
 
     # Just logging the details here for now.
     logging.info("Final processing status dump....")

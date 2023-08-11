@@ -1,9 +1,14 @@
 import logging
 import os
-from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPermissions
+import base64
 from datetime import datetime, timedelta
+from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPermissions
 from common import config_reader, constants
-from common.custom_exceptions import MissingDocumentTypeException, MissingConfigException
+from common.data_objects import Metadata
+from common.custom_exceptions import (
+    MissingDocumentTypeException,
+    MissingConfigException,
+)
 
 
 def string_is_not_empty(input_str):
@@ -19,7 +24,16 @@ def is_env_local():
     return env.lower() == "local".lower()
 
 
-def get_document_type_from_file_name(file_path):
+def is_env_prod():
+    if config_reader.config_data.has_option("Main", "env"):
+        env = config_reader.config_data.get("Main", "env")
+    else:
+        env = "prod"
+
+    return env.lower() == "local".lower()
+
+
+def get_document_type_from_file_name(file_path: str):
     """
     get_document_type_from_file_name Takes a filename or absolute path and extracts the
     document type form the last part of the base filename.
@@ -66,87 +80,124 @@ def get_document_type_from_file_name(file_path):
         raise MissingDocumentTypeException(msg)
 
 
-def connect_str():
+def get_connection_string():
     """
     Removes " " from starting and end of the string.
 
     Return:
-        returns connetion string
+        returns connection string
     """
+    if is_env_local() == True:
+        if not config_reader.config_data.has_option("Main", "azurite-storage-account-connection-str"):
+            raise MissingConfigException("Main.azure-storage-account-connection-str is missing in config.")
 
-    if not config_reader.config_data.has_option("Main", "azure-storage-account-connection-str"):
-        raise MissingConfigException("Main.azure-storage-account-connection-str is missing in config.")
+        connection_string = config_reader.config_data.get("Main", "azurite-storage-account-connection-str")
 
-    azure_storage_account_connection_str = config_reader.config_data.get("Main", "azure-storage-account-connection-str")
+        if not string_is_not_empty(connection_string):
+            raise MissingConfigException("Main.azurite-storage-account-connection-str is present but has empty value.")
 
-    if not string_is_not_empty(azure_storage_account_connection_str):
-        raise MissingConfigException("Main.azure-storage-account-connection-str is present but has empty value.")
+    else:
+        if not config_reader.config_data.has_option("Main", "azure-storage-account-connection-str"):
+            raise MissingConfigException("Main.azure-storage-account-connection-str is missing in config.")
 
-    if azure_storage_account_connection_str.startswith(("'", '"')) and azure_storage_account_connection_str.endswith(
-        ("'", '"')
-    ):
-        azure_storage_account_connection_str = azure_storage_account_connection_str.strip("'\"")
-        return azure_storage_account_connection_str
+        connection_string = config_reader.config_data.get("Main", "azure-storage-account-connection-str")
+
+        if not string_is_not_empty(connection_string):
+            raise MissingConfigException("Main.azure-storage-account-connection-str is present but has empty value.")
+
+    if connection_string.startswith(("'", '"')) and connection_string.endswith(("'", '"')):
+        connection_string = connection_string.strip("'\"")
+
+    return connection_string
 
 
-def move_blob(blob_path: str, destination_folder: str):
+def blob_service_client():
+    """
+    blob_service_client calls BobServiceClient
+
+    Returns:
+        BobServiceClient
+    """
+    return BlobServiceClient.from_connection_string(get_connection_string())
+
+
+def container_client():
+    """
+    container_client calls ContainerClient
+
+    Returns:
+        ContainerClient
+    """
+    return blob_service_client().get_container_client(constants.DEFAULT_BLOB_CONTAINER)
+
+
+def move_blob(source_blob_path: str, source_folder: str, destination_folder: str):
     """
     Moves blob from source folder to destination folder.
 
     Args:
-        blob_path (str): path of blob in source folder.
+        source_blob_path (str): path of blob in source folder
+        source_folder (str): source folder name
         destination_folder (str): destination folder name.
     """
 
-    # Connectting to the Azure Storage account
-    blob_service_client = BlobServiceClient.from_connection_string(connect_str())
+    destination_blob_path = source_blob_path.replace(source_folder, destination_folder)
+    source_blob_client = container_client().get_blob_client(blob=source_blob_path)
+    destination_blob_client = container_client().get_blob_client(blob=destination_blob_path)
 
-    # Getting a reference to the container
-    container_client = blob_service_client.get_container_client(constants.DEFAULT_BLOB_CONTAINER)
-
-    # Defining the paths to the source and destination blobs
-    source_blob_path = blob_path
-
-    destination_blob_path = source_blob_path.replace(constants.VALIDATION_SUCCESSFUL_SUBFOLDER, destination_folder)
-
-    # Getting a reference to the source blob
-    source_blob_client = container_client.get_blob_client(blob=source_blob_path)
-
-    # Getting a reference to the destination blob
-    destination_blob_client = container_client.get_blob_client(blob=destination_blob_path)
-
-    # Starting the blob copy operation
     destination_blob_client.start_copy_from_url(source_blob_client.url)
-
-    # Deleting the source blob
     source_blob_client.delete_blob()
 
 
-def sasurl(blob_path):
+def get_sas_url(blob_path):
     """
-    function sasurl takes a blob_path and generates sas_url for that blob.
+    sas_url takes a blob_path and generates sas_url for that blob.
 
     Args:
-        blob_path (str): path of blob present in inprogress subfolder.
+        blob_path (str): path of blob.
 
     Returns:
         returs sas_url of the blob.
     """
 
-    container_name = constants.DEFAULT_BLOB_CONTAINER
-
-    blob_service_client = BlobServiceClient.from_connection_string(connect_str())
-    container_client = blob_service_client.get_container_client(container_name)
-
     sas_token = generate_blob_sas(
-        container_client.account_name,
-        container_name,
+        container_client().account_name,
+        constants.DEFAULT_BLOB_CONTAINER,
         blob_path,
-        account_key=blob_service_client.credential.account_key,
+        account_key=blob_service_client().credential.account_key,
         permission=BlobSasPermissions(read=True),
         expiry=datetime.utcnow() + timedelta(hours=1),
     )
 
     # Constructing the full SAS URL for the blob
-    sas_url = f"https://{container_client.account_name}.blob.core.windows.net/{container_name}/{blob_path}?{sas_token}"
+    sas_url = f"https://{container_client().account_name}.blob.core.windows.net/{constants.DEFAULT_BLOB_CONTAINER}/{blob_path}?{sas_token}"
     return sas_url
+
+
+def get_metadata(status: str, path: str):
+    """
+    get_meta takes file status and its path and collects metadata properties of that blob.
+
+    Args:
+        status (str): Blob status
+        path (str): Path of blob
+    Returns:
+      str:  returns object of class Metadata
+    """
+    blob_client = container_client().get_blob_client(path)
+    properties = blob_client.get_blob_properties()
+
+    metadata = Metadata()
+
+    metadata.status = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}-{status}]"
+    metadata.name = properties.name
+    metadata.content_md5 = base64.b64encode(properties.content_settings.content_md5).decode("utf-8")
+    metadata.url = blob_client.url
+    metadata.blob_type = properties.blob_type
+    metadata.container = container_client().container_name
+    metadata.content_length = properties.size
+    metadata.created = properties.creation_time.strftime("%Y-%m-%d %H:%M:%S")
+    metadata.last_modified = properties.last_modified.strftime("%Y-%m-%d %H:%M:%S")
+    metadata.content_type = properties.content_settings.content_type
+
+    return metadata
