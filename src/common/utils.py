@@ -80,7 +80,7 @@ def get_document_type_from_file_name(file_path: str):
         raise MissingDocumentTypeException(msg)
 
 
-def get_connection_string() -> str:
+def get_storage_connection_string() -> str:
     """
     get_connection_string normalises connection string
 
@@ -125,7 +125,7 @@ def blob_service_client():
     Returns:
         BobServiceClient
     """
-    return BlobServiceClient.from_connection_string(get_connection_string())
+    return BlobServiceClient.from_connection_string(get_storage_connection_string())
 
 
 def default_blob_container_client():
