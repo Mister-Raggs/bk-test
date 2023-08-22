@@ -42,31 +42,35 @@ class InputBlob(object):
     """
     InputBlob represents the input blob that needs to be analyzed.
 
-    Raises :py:class:`CitadelIDPProcessingException` if validation_successful_document_url
-    is provided to constructor
+    Raises :py:class:`CitadelIDPProcessingException` if validation_successful_blob_path
+    is not provided to constructor
 
     """
 
     validation_successful_blob_path: str = None
     inprogress_blob_path: str = None
-    inprogress_blob_url: str = None
-    inprogress_blob_path: str = None
+
     blob_type: str = None
     form_recognizer_model_id: str = None
 
+    inprogress_blob_sas_url: str = None
+
     form_recognizer_endpoint: str = None
-    # is_processed mean analysis was completed.
+
+    # is_processed means processing of blob was completed.
     is_processed: bool = False
-    # is_successful mean analysis was completed AND processing was successful
+
+    # is_successful means analysis was completed AND processing was successful
     is_successful: bool = False
-    # is_successful mean analysis was completed AND processing failed
+
+    # is_failed means analysis was completed AND processing failed
     is_failed: bool = False
 
     failed_blob_path: str = None
     successful_blob_path: str = None
-
     result_json_data: str = None
-    meta: str = None
+
+    metadata: str = None
 
     # --------------------------------------------------------------------------------
 
@@ -85,7 +89,7 @@ class InputBlob(object):
         else:
             # raise exception
             raise CitadelIDPProcessingException(
-                "To create an InputBlob validation_successful_blob_path is required, but none was provided."
+                "To create an InputBlob validation_successful_blob_path is required, but wasn't provided."
             )
 
         # if no custom form_recognizer_endpoint provided, use the main one in config.
@@ -99,10 +103,10 @@ class InputBlob(object):
             "\nInputBlob("
             + f"\nvalidation_successful_blob_path='{self.validation_successful_blob_path}'"
             + f"\ninprogress_blob_path='{self.inprogress_blob_path}'"
-            + f"\ninprogress_blob_sas_url='{self.inprogress_blob_url}'"
             + f"\nblob_type='{self.blob_type}'"
             + f"\nform_recognizer_model_id='{self.form_recognizer_model_id}'"
             + f"\nform_recognizer_endpoint='{self.form_recognizer_endpoint}'"
+            + f"\ninprogress_blob_sas_url='{self.inprogress_blob_sas_url}'"
             + f"\nis_processed='{self.is_processed}'"
             + f"\nis_successful='{self.is_successful}'"
             + f"\nis_failed='{self.is_failed}'"
@@ -110,5 +114,5 @@ class InputBlob(object):
             + f"\nfailed_blob_path='{self.failed_blob_path}'"
             + f"\nresult_json_data='{self.result_json_data}'"
             + ")"
-            + f"\n\nMetaData: {self.meta}\n"
+            + f"\n\nMetaData: {self.metadata}\n"
         )

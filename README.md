@@ -148,7 +148,19 @@ Citadel is an advanced Intelligent Document Processing (IDP) that uses AI and en
     (.venv) %n@%m %1~ %#
     ```  
 ---
+## Setting up azurite local storage
+1.  Install azurite on your local system.
+    Guide link:https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=npm#install-azurite
 
+2.  Change the path present in command in batch file :
+    `C:\Users\AshishChib\Documents\GitHub\Citadel-IDP-Src\scripts\activate_azurite.bat` according to your local system.
+
+3.  To activate azurite local storage use the command as shown below:
+    ```
+    cd C:\Users\AshishChib\Documents\GitHub\Citadel-IDP-Src\scripts
+    PS C:\Users\AshishChib\Documents\GitHub\Citadel-IDP-Src\scripts> .\activate_azurite   
+    ```
+---
 ## How to Run the app in standalone terminal
 1.  To run the IDP app in terminal, first you need to prepare the local blob storage folder. 
     - In local env (`/Users/virwali/Aark-Global/Citadel-IDP/Citadel-IDP-Src-Github/config-files/local/citadel-idp-config.ini` config file property `Main.env` set to local) the IDP app uses the local folder `/Users/virwali/Aark-Global/Citadel-IDP/Citadel-IDP-Src-Github/local-blob-storage/` as the main blob file store. 

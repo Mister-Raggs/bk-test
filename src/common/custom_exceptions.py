@@ -11,7 +11,7 @@ class CitadelIDPProcessingException(Exception):
 
 class FolderMissingBusinessException(CitadelIDPProcessingException):
     """
-    Exception to be raised when a folder is expected to eb present but doesn't exist.
+    Exception to be raised when a folder is expected to be present but doesn't exist.
     """
 
 
@@ -24,4 +24,10 @@ class MissingConfigException(CitadelIDPProcessingException):
 class MissingDocumentTypeException(CitadelIDPProcessingException):
     """
     Exception to be raised when document type cannot be inferred from file name.
+    """
+
+
+class ContainerMissingEXception(CitadelIDPProcessingException):
+    """
+    Exception to be raised when a container is expected to be present but doesn't exist.
     """

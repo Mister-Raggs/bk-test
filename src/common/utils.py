@@ -80,13 +80,20 @@ def get_document_type_from_file_name(file_path: str):
         raise MissingDocumentTypeException(msg)
 
 
-def get_connection_string():
+def get_storage_connection_string() -> str:
     """
-    Removes " " from starting and end of the string.
+    get_connection_string normalises connection string
 
-    Return:
-        returns connection string
+    Raises:
+        MissingConfigException: Raised if azurite-storage-account-connection-str is missing in config file
+        MissingConfigException: Raised if azurite-storage-account-connection-str is empty in config file
+        MissingConfigException: Raised if azure-storage-account-connection-str is missing in config file
+        MissingConfigException: Raised if azure-storage-account-connection-str is empty in config file
+
+    Returns:
+        str : connection string
     """
+
     if is_env_local() == True:
         if not config_reader.config_data.has_option("Main", "azurite-storage-account-connection-str"):
             raise MissingConfigException("Main.azure-storage-account-connection-str is missing in config.")
@@ -118,10 +125,10 @@ def blob_service_client():
     Returns:
         BobServiceClient
     """
-    return BlobServiceClient.from_connection_string(get_connection_string())
+    return BlobServiceClient.from_connection_string(get_storage_connection_string())
 
 
-def container_client():
+def default_blob_container_client():
     """
     container_client calls ContainerClient
 
@@ -142,8 +149,9 @@ def move_blob(source_blob_path: str, source_folder: str, destination_folder: str
     """
 
     destination_blob_path = source_blob_path.replace(source_folder, destination_folder)
-    source_blob_client = container_client().get_blob_client(blob=source_blob_path)
-    destination_blob_client = container_client().get_blob_client(blob=destination_blob_path)
+
+    source_blob_client = default_blob_container_client().get_blob_client(blob=source_blob_path)
+    destination_blob_client = default_blob_container_client().get_blob_client(blob=destination_blob_path)
 
     destination_blob_client.start_copy_from_url(source_blob_client.url)
     source_blob_client.delete_blob()
@@ -151,7 +159,7 @@ def move_blob(source_blob_path: str, source_folder: str, destination_folder: str
 
 def get_sas_url(blob_path):
     """
-    sas_url takes a blob_path and generates sas_url for that blob.
+    get_sas_url takes a blob_path and generates sas_url for that blob.
 
     Args:
         blob_path (str): path of blob.
@@ -161,7 +169,7 @@ def get_sas_url(blob_path):
     """
 
     sas_token = generate_blob_sas(
-        container_client().account_name,
+        default_blob_container_client().account_name,
         constants.DEFAULT_BLOB_CONTAINER,
         blob_path,
         account_key=blob_service_client().credential.account_key,
@@ -170,11 +178,12 @@ def get_sas_url(blob_path):
     )
 
     # Constructing the full SAS URL for the blob
-    sas_url = f"https://{container_client().account_name}.blob.core.windows.net/{constants.DEFAULT_BLOB_CONTAINER}/{blob_path}?{sas_token}"
+    sas_url = f"https://{default_blob_container_client().account_name}.blob.core.windows.net/{constants.DEFAULT_BLOB_CONTAINER}/{blob_path}?{sas_token}"
+
     return sas_url
 
 
-def get_metadata(status: str, path: str):
+def get_metadata(status: str, path: str) -> Metadata:
     """
     get_meta takes file status and its path and collects metadata properties of that blob.
 
@@ -184,7 +193,7 @@ def get_metadata(status: str, path: str):
     Returns:
       str:  returns object of class Metadata
     """
-    blob_client = container_client().get_blob_client(path)
+    blob_client = default_blob_container_client().get_blob_client(path)
     properties = blob_client.get_blob_properties()
 
     metadata = Metadata()
@@ -194,7 +203,7 @@ def get_metadata(status: str, path: str):
     metadata.content_md5 = base64.b64encode(properties.content_settings.content_md5).decode("utf-8")
     metadata.url = blob_client.url
     metadata.blob_type = properties.blob_type
-    metadata.container = container_client().container_name
+    metadata.container = default_blob_container_client().container_name
     metadata.content_length = properties.size
     metadata.created = properties.creation_time.strftime("%Y-%m-%d %H:%M:%S")
     metadata.last_modified = properties.last_modified.strftime("%Y-%m-%d %H:%M:%S")
