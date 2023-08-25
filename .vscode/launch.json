@@ -8,12 +8,12 @@
             "name": "Citadel IDP Github - app.py",
             "type": "python",
             "request": "launch",
-            "program": "C:\\Users\\AshishChib\\Documents\\GitHub\\Citadel-IDP-Src\\src\\app.py",
+            "program": "C:\\Users\\AshishChib\\Documents\\GitHub\\Citadel-IDP-Backend\\src\\app.py",
             "args": [
                 "-c",
-                "C:\\Users\\AshishChib\\Documents\\GitHub\\Citadel-IDP-Src\\config-files\\local\\citadel-idp-config.ini",
+                "C:\\Users\\AshishChib\\Documents\\GitHub\\Citadel-IDP-Backend\\config-files\\local\\citadel-idp-config.ini",
                 "-l",
-                "C:\\Users\\AshishChib\\Documents\\GitHub\\Citadel-IDP-Src\\logs\\citadel-idp-app.log"
+                "C:\\Users\\AshishChib\\Documents\\GitHub\\Citadel-IDP-Backend\\logs\\citadel-idp-app.log"
             ],
             "console": "integratedTerminal",
             "justMyCode": false,

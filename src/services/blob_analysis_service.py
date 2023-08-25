@@ -8,7 +8,7 @@ from common import config_reader, utils, constants
 from common.custom_exceptions import (
     MissingConfigException,
     CitadelIDPProcessingException,
-    ContainerMissingEXception,
+    ContainerMissingException,
 )
 
 
@@ -68,7 +68,7 @@ def analyze_blob(input_blob: InputBlob) -> InputBlob:
 
     container_list = [container.name for container in utils.blob_service_client().list_containers()]
     if not constants.DEFAULT_BLOB_OUTPUT_CONTAINER in container_list:
-        raise ContainerMissingEXception(f"Container '{constants.DEFAULT_BLOB_OUTPUT_CONTAINER}' does not exist.")
+        raise ContainerMissingException(f"Container '{constants.DEFAULT_BLOB_OUTPUT_CONTAINER}' does not exist.")
 
     blob_output_container_client = utils.blob_service_client().get_container_client(
         constants.DEFAULT_BLOB_OUTPUT_CONTAINER

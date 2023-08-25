@@ -8,7 +8,8 @@ from common.custom_exceptions import (
     FolderMissingBusinessException,
     CitadelIDPProcessingException,
     MissingConfigException,
-    ContainerMissingEXception,
+    ContainerMissingException,
+    BlobMissingException,
 )
 
 from common.data_objects import InputBlob
@@ -28,7 +29,7 @@ def check_and_process_blob_storage() -> list[InputBlob]:
 
     container_list = [container.name for container in utils.blob_service_client().list_containers()]
     if not constants.DEFAULT_BLOB_CONTAINER in container_list:
-        raise ContainerMissingEXception(f"Container '{constants.DEFAULT_BLOB_CONTAINER}' does not exist.")
+        raise ContainerMissingException(f"Container '{constants.DEFAULT_BLOB_CONTAINER}' does not exist.")
 
     logging.info("'%s' container exists, pulling blobs path now.", constants.DEFAULT_BLOB_CONTAINER)
 
@@ -98,6 +99,13 @@ def get_input_blobs_list() -> list[InputBlob]:
 
     if len(validation_successful_blobs_path_list) == 0:
         raise FolderMissingBusinessException(f"'{constants.VALIDATION_SUCCESSFUL_SUBFOLDER}' folders do not exist.")
+    else:
+        validation_successful_blobs_path_list = [
+            item for item in validation_successful_blobs_path_list if "dummy" not in item.lower()
+        ]
+
+    if len(validation_successful_blobs_path_list) == 0:
+        raise BlobMissingException(f"'{constants.VALIDATION_SUCCESSFUL_SUBFOLDER}' folders are empty.")
 
     for validation_successful_blob_path in validation_successful_blobs_path_list:
         input_blobs_list.append(collect_input_blob(validation_successful_blob_path))

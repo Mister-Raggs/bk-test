@@ -11,9 +11,9 @@ def main():
     # initialize logging
     args = sys.argv[1:]
     config_file_path = (
-        "C:\\Users\\AshishChib\\Documents\\GitHub\\Citadel-IDP-Src\\config-files\\local\\citadel-idp-config.ini"
+        "C:\\Users\\AshishChib\\Documents\\GitHub\\Citadel-IDP-Backend\\config-files\\local\\citadel-idp-config.ini"
     )
-    log_file_abs_path = "C:\\Users\\AshishChib\\Documents\\GitHub\\Citadel-IDP-Src\\logs\\citadel-idp-app.log"
+    log_file_abs_path = "C:\\Users\\AshishChib\\Documents\\GitHub\\Citadel-IDP-Backend\\logs\\citadel-idp-app.log"
 
     # reads cmd line args if any
     try:
