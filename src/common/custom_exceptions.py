@@ -27,7 +27,13 @@ class MissingDocumentTypeException(CitadelIDPProcessingException):
     """
 
 
-class ContainerMissingEXception(CitadelIDPProcessingException):
+class ContainerMissingException(CitadelIDPProcessingException):
     """
     Exception to be raised when a container is expected to be present but doesn't exist.
+    """
+
+
+class BlobMissingException(CitadelIDPProcessingException):
+    """
+    Exception to be raised when blobs are expected to be present but not present.
     """

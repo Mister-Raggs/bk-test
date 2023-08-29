@@ -8,7 +8,7 @@ from common.custom_exceptions import (
     FolderMissingBusinessException,
     CitadelIDPProcessingException,
     MissingConfigException,
-    ContainerMissingEXception,
+    BlobMissingException,
 )
 
 from common.data_objects import InputBlob
@@ -21,17 +21,9 @@ def check_and_process_blob_storage() -> list[InputBlob]:
 
     Returns:
         list[InputBlob]: List of processed input blobs.
-    Raises:
-        ContainerMissingEXception: Raised if the predefined azure container doesn't exist.
     """
-    logging.info("Searching for Default '%s' Container.", constants.DEFAULT_BLOB_CONTAINER)
 
-    container_list = [container.name for container in utils.blob_service_client().list_containers()]
-    if not constants.DEFAULT_BLOB_CONTAINER in container_list:
-        raise ContainerMissingEXception(f"Container '{constants.DEFAULT_BLOB_CONTAINER}' does not exist.")
-
-    logging.info("'%s' container exists, pulling blobs path now.", constants.DEFAULT_BLOB_CONTAINER)
-
+    logging.info("Pulling blob paths from '%s' folders.", constants.VALIDATION_SUCCESSFUL_SUBFOLDER)
     input_blobs_list = get_input_blobs_list()
     processed_blobs_list: list[InputBlob] = []
 
@@ -82,7 +74,7 @@ def get_input_blobs_list() -> list[InputBlob]:
     input_blobs_list = []
     company_blobs_path_list = [
         path.name
-        for path in utils.default_blob_container_client().list_blobs(
+        for path in utils.container_client(constants.DEFAULT_BLOB_CONTAINER).list_blobs(
             name_starts_with=constants.COMPANY_ROOT_FOLDER_PREFIX
         )
     ]
@@ -98,6 +90,13 @@ def get_input_blobs_list() -> list[InputBlob]:
 
     if len(validation_successful_blobs_path_list) == 0:
         raise FolderMissingBusinessException(f"'{constants.VALIDATION_SUCCESSFUL_SUBFOLDER}' folders do not exist.")
+    else:
+        validation_successful_blobs_path_list = [
+            item for item in validation_successful_blobs_path_list if "dummy" not in item.lower()
+        ]
+
+    if len(validation_successful_blobs_path_list) == 0:
+        raise BlobMissingException(f"'{constants.VALIDATION_SUCCESSFUL_SUBFOLDER}' folders are empty.")
 
     for validation_successful_blob_path in validation_successful_blobs_path_list:
         input_blobs_list.append(collect_input_blob(validation_successful_blob_path))

@@ -4,7 +4,8 @@ from common import config_reader
 from common.custom_exceptions import (
     FolderMissingBusinessException,
     CitadelIDPProcessingException,
-    ContainerMissingEXception,
+    ContainerMissingException,
+    BlobMissingException,
 )
 from services import blob_handler
 
@@ -28,8 +29,10 @@ def start_flow():
         if use_azure_blog_storage:
             try:
                 processed_files_list = blob_handler.check_and_process_blob_storage()
-            except ContainerMissingEXception as cme:
+            except ContainerMissingException as cme:
                 raise CitadelIDPProcessingException(cme) from cme
+            except BlobMissingException as bme:
+                raise CitadelIDPProcessingException(bme) from bme
             except FolderMissingBusinessException as fmbe:
                 raise CitadelIDPProcessingException(fmbe) from fmbe
             except Exception as ex:
