@@ -2,5 +2,31 @@
     "[python]": {
         "editor.defaultFormatter": "ms-python.black-formatter"
     },
-    "python.formatting.provider": "none"
+    "code-runner.runInTerminal": true,
+    "python.formatting.provider": "black",
+    "python.linting.pylintArgs": [
+        "--load-plugins",
+        "pylint_flask_sqlalchemy",
+        "pylint_flask",
+    ],
+    "black-formatter.args": [
+        "--line-length",
+        "120"
+    ],
+    "python.linting.pylintEnabled": true,
+    "python.analysis.completeFunctionParens": true,
+    "workbench.list.openMode": "doubleClick",
+    "cSpell.userWords": [
+        "subfolders"
+    ],
+    "autoDocstring.startOnNewLine": true,
+    "autoDocstring.includeName": true,
+    "terminal.integrated.scrollback": 10000,
+    "python.linting.ignorePatterns": [
+        "**/site-packages/**/*.py",
+        ".vscode/*.py",
+        "**/.venv/**/*.py"
+    ],
+    "html.format.templating": true,
+    "workbench.tree.indent": 14
 }

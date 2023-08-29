@@ -8,7 +8,6 @@ from common import config_reader, utils, constants
 from common.custom_exceptions import (
     MissingConfigException,
     CitadelIDPProcessingException,
-    ContainerMissingException,
 )
 
 
@@ -23,7 +22,6 @@ def analyze_blob(input_blob: InputBlob) -> InputBlob:
         MissingConfigException: Raised if form-recognizer-key is missing in config file.
         MissingConfigException: Raised if form-recognizer-key is empty
         CitadelIDPProcessingException:Raised if input_blob.inprogress_blob_url is empty
-        ContainerMissingEXception: Raised if the predefined azure container doesn't exist.
 
     Returns:
         InputBlob: The updated input blob
@@ -66,14 +64,7 @@ def analyze_blob(input_blob: InputBlob) -> InputBlob:
     destination_path = input_blob.inprogress_blob_path.replace("/Inprogress/", "/")
     json_file_name = f"{destination_path}.json"
 
-    container_list = [container.name for container in utils.blob_service_client().list_containers()]
-    if not constants.DEFAULT_BLOB_OUTPUT_CONTAINER in container_list:
-        raise ContainerMissingException(f"Container '{constants.DEFAULT_BLOB_OUTPUT_CONTAINER}' does not exist.")
-
-    blob_output_container_client = utils.blob_service_client().get_container_client(
-        constants.DEFAULT_BLOB_OUTPUT_CONTAINER
-    )
-    blob_client = blob_output_container_client.get_blob_client(json_file_name)
+    blob_client = utils.container_client(constants.DEFAULT_JSON_OUTPUT_CONTAINER).get_blob_client(json_file_name)
     blob_client.upload_blob(input_blob.result_json_data, overwrite=False)
 
     return input_blob

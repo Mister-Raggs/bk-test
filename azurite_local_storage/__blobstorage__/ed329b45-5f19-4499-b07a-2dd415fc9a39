@@ -1,0 +1,32 @@
+def sasurl(file_path):
+    container_name, blob_path = file_path.split("/", 1)
+
+    connection_string = connect_str()
+    # Define regular expressions to match the account name and account key in the connection string
+    account_name_pattern = r"AccountName=(.*?)(;|$)"
+    account_key_pattern = r"AccountKey=(.*?)(;|$)"
+
+    # Find the account name and account key using regular expressions
+    match_account_name = re.search(account_name_pattern, connection_string)
+    match_account_key = re.search(account_key_pattern, connection_string)
+
+    account_name = match_account_name.group(1)
+    account_key = match_account_key.group(1)
+
+    # Create a BlobServiceClient
+    blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+    # Get a reference to the container
+    container_client = blob_service_client.get_container_client(container_name)
+
+    sas_token = generate_blob_sas(
+        container_client.account_name,
+        container_name,
+        blob_path,
+        account_key=blob_service_client.credential.account_key,
+        permission=BlobSasPermissions(read=True),
+        expiry=datetime.utcnow() + timedelta(hours=1),
+    )
+
+    # Constructing the full SAS URL for the blob
+    sas_url = f"https://{container_client.account_name}.blob.core.windows.net/{container_name}/{blob_path}?{sas_token}"
+    return sas_url
