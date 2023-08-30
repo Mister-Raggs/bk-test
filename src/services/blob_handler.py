@@ -6,7 +6,7 @@ import logging
 from common import constants, utils
 from common.custom_exceptions import (
     FolderMissingBusinessException,
-    CitadelIDPProcessingException,
+    CitadelIDPBackendException,
     MissingConfigException,
     BlobMissingException,
 )
@@ -43,7 +43,7 @@ def check_and_process_blob_storage() -> list[InputBlob]:
             input_blob = set_processing_status_and_move_completed_blobs(input_blob, True)
             processed_blobs_list.append(input_blob)
 
-        except CitadelIDPProcessingException:
+        except CitadelIDPBackendException:
             logging.exception(
                 "A General Citadel IDP processing error occured while analyzing the document '%s'.",
                 input_blob.inprogress_blob_path,

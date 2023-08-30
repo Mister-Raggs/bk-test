@@ -7,7 +7,7 @@ from common.data_objects import InputBlob
 from common import config_reader, utils, constants
 from common.custom_exceptions import (
     MissingConfigException,
-    CitadelIDPProcessingException,
+    CitadelIDPBackendException,
 )
 
 
@@ -46,7 +46,7 @@ def analyze_blob(input_blob: InputBlob) -> InputBlob:
             input_blob.form_recognizer_model_id, input_blob.inprogress_blob_sas_url
         )
     else:
-        raise CitadelIDPProcessingException("input_blob.inprogress_blob_url should be non empty.")
+        raise CitadelIDPBackendException("input_blob.inprogress_blob_url should be non empty.")
 
     result = poller.result()
     result_dict = [result.to_dict()]

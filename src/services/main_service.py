@@ -3,7 +3,7 @@ import logging
 from common import config_reader
 from common.custom_exceptions import (
     FolderMissingBusinessException,
-    CitadelIDPProcessingException,
+    CitadelIDPBackendException,
     ContainerMissingException,
     BlobMissingException,
 )
@@ -30,13 +30,13 @@ def start_flow():
             try:
                 processed_files_list = blob_handler.check_and_process_blob_storage()
             except ContainerMissingException as cme:
-                raise CitadelIDPProcessingException(cme) from cme
+                raise CitadelIDPBackendException(cme) from cme
             except BlobMissingException as bme:
-                raise CitadelIDPProcessingException(bme) from bme
+                raise CitadelIDPBackendException(bme) from bme
             except FolderMissingBusinessException as fmbe:
-                raise CitadelIDPProcessingException(fmbe) from fmbe
+                raise CitadelIDPBackendException(fmbe) from fmbe
             except Exception as ex:
-                raise CitadelIDPProcessingException(ex) from ex
+                raise CitadelIDPBackendException(ex) from ex
         else:
             logging.exception("If env is local or prod use-azure-blog-storage needs to be true")
 
