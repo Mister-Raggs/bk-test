@@ -3,7 +3,7 @@ All data objects declared here.
 """
 
 from common import config_reader, utils
-from common.custom_exceptions import CitadelIDPProcessingException
+from common.custom_exceptions import CitadelIDPBackendException
 
 
 class Metadata(object):
@@ -88,7 +88,7 @@ class InputBlob(object):
             self.validation_successful_blob_path = validation_successful_blob_path
         else:
             # raise exception
-            raise CitadelIDPProcessingException(
+            raise CitadelIDPBackendException(
                 "To create an InputBlob validation_successful_blob_path is required, but wasn't provided."
             )
 
