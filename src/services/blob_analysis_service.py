@@ -64,7 +64,9 @@ def analyze_blob(input_blob: InputBlob) -> InputBlob:
     destination_path = input_blob.inprogress_blob_path.replace("/Inprogress/", "/")
     json_file_name = f"{destination_path}.json"
 
-    blob_client = utils.container_client(constants.DEFAULT_JSON_OUTPUT_CONTAINER).get_blob_client(json_file_name)
+    blob_client = utils.get_azure_container_client(constants.DEFAULT_JSON_OUTPUT_CONTAINER).get_blob_client(
+        json_file_name
+    )
     blob_client.upload_blob(input_blob.result_json_data, overwrite=False)
 
     return input_blob

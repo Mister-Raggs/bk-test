@@ -74,7 +74,7 @@ def get_input_blobs_list() -> list[InputBlob]:
     input_blobs_list = []
     company_blobs_path_list = [
         path.name
-        for path in utils.container_client(constants.DEFAULT_BLOB_CONTAINER).list_blobs(
+        for path in utils.get_azure_container_client(constants.DEFAULT_BLOB_CONTAINER).list_blobs(
             name_starts_with=constants.COMPANY_ROOT_FOLDER_PREFIX
         )
     ]

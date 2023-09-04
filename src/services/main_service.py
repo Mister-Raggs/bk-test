@@ -22,9 +22,10 @@ def start_flow():
     processed_files_list = []
 
     if env.lower() == "local" or env.lower() == "prod":
-        use_azure_blog_storage = True
         if config_reader.config_data.has_option("Main", "use-azure-blog-storage"):
             use_azure_blog_storage = config_reader.config_data.getboolean("Main", "use-azure-blog-storage")
+        else:
+            use_azure_blog_storage = True
 
         if use_azure_blog_storage:
             try:

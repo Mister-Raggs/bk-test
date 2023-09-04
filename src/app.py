@@ -1,11 +1,7 @@
-import getopt
-import logging
 import os
 from time import sleep
 import dotenv
-import sys
 from common import logging_config, config_reader
-from services import main_service
 from jobs import job_scheduler_factory
 
 

@@ -83,35 +83,23 @@ def get_document_type_from_file_name(file_path: str):
 
 def get_blob_storage_connection_string() -> str:
     """
-    get_connection_string normalises connection string
+    get_connection_string normalizes connection string
 
     Raises:
-        MissingConfigException: Raised if azurite-storage-account-connection-str is missing in config file
-        MissingConfigException: Raised if azurite-storage-account-connection-str is empty in config file
         MissingConfigException: Raised if azure-storage-account-connection-str is missing in config file
         MissingConfigException: Raised if azure-storage-account-connection-str is empty in config file
 
     Returns:
-        str : connection string
+        str : normalized connection string
     """
 
-    if is_env_local() == True:
-        if not config_reader.config_data.has_option("Main", "azurite-storage-account-connection-str"):
-            raise MissingConfigException("Main.azure-storage-account-connection-str is missing in config.")
+    if not config_reader.config_data.has_option("Main", "azure-storage-account-connection-str"):
+        raise MissingConfigException("Main.azure-storage-account-connection-str is missing in config.")
 
-        connection_string = config_reader.config_data.get("Main", "azurite-storage-account-connection-str")
+    connection_string = config_reader.config_data.get("Main", "azure-storage-account-connection-str")
 
-        if not string_is_not_empty(connection_string):
-            raise MissingConfigException("Main.azurite-storage-account-connection-str is present but has empty value.")
-
-    else:
-        if not config_reader.config_data.has_option("Main", "azure-storage-account-connection-str"):
-            raise MissingConfigException("Main.azure-storage-account-connection-str is missing in config.")
-
-        connection_string = config_reader.config_data.get("Main", "azure-storage-account-connection-str")
-
-        if not string_is_not_empty(connection_string):
-            raise MissingConfigException("Main.azure-storage-account-connection-str is present but has empty value.")
+    if not string_is_not_empty(connection_string):
+        raise MissingConfigException("Main.azure-storage-account-connection-str is present but has empty value.")
 
     if connection_string.startswith(("'", '"')) and connection_string.endswith(("'", '"')):
         connection_string = connection_string.strip("'\"")
@@ -119,7 +107,7 @@ def get_blob_storage_connection_string() -> str:
     return connection_string
 
 
-def blob_service_client():
+def get_azure_storage_blob_service_client():
     """
     blob_service_client calls BobServiceClient
 
@@ -129,7 +117,7 @@ def blob_service_client():
     return BlobServiceClient.from_connection_string(get_blob_storage_connection_string())
 
 
-def container_client(container_name: str):
+def get_azure_container_client(container_name: str):
     """
     container_client calls ContainerClient
 
@@ -142,7 +130,7 @@ def container_client(container_name: str):
     Returns:
         ContainerClient: container client
     """
-    container_client = blob_service_client().get_container_client(container_name)
+    container_client = get_azure_storage_blob_service_client().get_container_client(container_name)
     if not container_client.exists():
         raise ContainerMissingException(f"Container '{container_name}' does not exist.")
     else:
@@ -161,8 +149,10 @@ def move_blob(source_blob_path: str, source_folder: str, destination_folder: str
 
     destination_blob_path = source_blob_path.replace(source_folder, destination_folder)
 
-    source_blob_client = container_client(constants.DEFAULT_BLOB_CONTAINER).get_blob_client(blob=source_blob_path)
-    destination_blob_client = container_client(constants.DEFAULT_BLOB_CONTAINER).get_blob_client(
+    source_blob_client = get_azure_container_client(constants.DEFAULT_BLOB_CONTAINER).get_blob_client(
+        blob=source_blob_path
+    )
+    destination_blob_client = get_azure_container_client(constants.DEFAULT_BLOB_CONTAINER).get_blob_client(
         blob=destination_blob_path
     )
 
@@ -182,16 +172,16 @@ def get_sas_url(blob_path):
     """
 
     sas_token = generate_blob_sas(
-        container_client(constants.DEFAULT_BLOB_CONTAINER).account_name,
+        get_azure_container_client(constants.DEFAULT_BLOB_CONTAINER).account_name,
         constants.DEFAULT_BLOB_CONTAINER,
         blob_path,
-        account_key=blob_service_client().credential.account_key,
+        account_key=get_azure_storage_blob_service_client().credential.account_key,
         permission=BlobSasPermissions(read=True),
         expiry=datetime.utcnow() + timedelta(hours=1),
     )
 
     # Constructing the full SAS URL for the blob
-    sas_url = f"https://{container_client(constants.DEFAULT_BLOB_CONTAINER).account_name}.blob.core.windows.net/{constants.DEFAULT_BLOB_CONTAINER}/{blob_path}?{sas_token}"
+    sas_url = f"https://{get_azure_container_client(constants.DEFAULT_BLOB_CONTAINER).account_name}.blob.core.windows.net/{constants.DEFAULT_BLOB_CONTAINER}/{blob_path}?{sas_token}"
 
     return sas_url
 
@@ -206,7 +196,7 @@ def get_metadata(status: str, path: str) -> Metadata:
     Returns:
       str:  returns object of class Metadata
     """
-    blob_client = container_client(constants.DEFAULT_BLOB_CONTAINER).get_blob_client(path)
+    blob_client = get_azure_container_client(constants.DEFAULT_BLOB_CONTAINER).get_blob_client(path)
     properties = blob_client.get_blob_properties()
 
     metadata = Metadata()
@@ -216,7 +206,7 @@ def get_metadata(status: str, path: str) -> Metadata:
     metadata.content_md5 = base64.b64encode(properties.content_settings.content_md5).decode("utf-8")
     metadata.url = blob_client.url
     metadata.blob_type = properties.blob_type
-    metadata.container = container_client(constants.DEFAULT_BLOB_CONTAINER).container_name
+    metadata.container = get_azure_container_client(constants.DEFAULT_BLOB_CONTAINER).container_name
     metadata.content_length = properties.size
     metadata.created = properties.creation_time.strftime("%Y-%m-%d %H:%M:%S")
     metadata.last_modified = properties.last_modified.strftime("%Y-%m-%d %H:%M:%S")
