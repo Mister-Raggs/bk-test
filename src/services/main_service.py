@@ -7,7 +7,7 @@ from common.custom_exceptions import (
     ContainerMissingException,
     BlobMissingException,
 )
-from services import blob_handler
+from services import input_blob_handler
 
 
 def start_flow():
@@ -29,7 +29,7 @@ def start_flow():
 
         if use_azure_blog_storage:
             try:
-                processed_files_list = blob_handler.check_and_process_blob_storage()
+                processed_files_list = input_blob_handler.handle_input_blob_process()
             except ContainerMissingException as cme:
                 raise CitadelIDPBackendException(cme) from cme
             except BlobMissingException as bme:

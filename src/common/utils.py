@@ -1,6 +1,7 @@
 import logging
 import os
 import base64
+import mongoengine as me
 from datetime import datetime, timedelta
 from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPermissions
 from common import config_reader, constants
@@ -83,7 +84,7 @@ def get_document_type_from_file_name(file_path: str):
 
 def get_blob_storage_connection_string() -> str:
     """
-    get_connection_string normalizes connection string
+    get_blob_storage_connection_string normalizes connection string
 
     Raises:
         MissingConfigException: Raised if azure-storage-account-connection-str is missing in config file
@@ -105,6 +106,24 @@ def get_blob_storage_connection_string() -> str:
         connection_string = connection_string.strip("'\"")
 
     return connection_string
+
+
+def configure_database():
+    if not config_reader.config_data.has_option("Main", "mongodb_connection_string"):
+        raise MissingConfigException("Main.mongodb_connection_string is missing in config.")
+
+    mongodb_connection_string = config_reader.config_data.get("Main", "mongodb_connection_string")
+
+    if not string_is_not_empty(mongodb_connection_string):
+        raise MissingConfigException("Main.mongodb_connection_string is present but has empty value.")
+
+    if mongodb_connection_string.startswith(("'", '"')) and mongodb_connection_string.endswith(("'", '"')):
+        mongodb_connection_string = mongodb_connection_string.strip("'\"")
+
+    me.connect(
+        host=mongodb_connection_string,
+        alias=constants.MONGODB_CONN_ALIAS,
+    )
 
 
 def get_azure_storage_blob_service_client():
@@ -160,7 +179,7 @@ def move_blob(source_blob_path: str, source_folder: str, destination_folder: str
     source_blob_client.delete_blob()
 
 
-def get_sas_url(blob_path):
+def get_sas_url(blob_path: str, blob_service_client: BlobServiceClient):
     """
     get_sas_url takes a blob_path and generates sas_url for that blob.
 
@@ -170,18 +189,18 @@ def get_sas_url(blob_path):
     Returns:
         returs sas_url of the blob.
     """
-
+    account_name = blob_service_client.get_container_client(constants.DEFAULT_BLOB_CONTAINER).account_name
     sas_token = generate_blob_sas(
-        get_azure_container_client(constants.DEFAULT_BLOB_CONTAINER).account_name,
+        account_name,
         constants.DEFAULT_BLOB_CONTAINER,
         blob_path,
-        account_key=get_azure_storage_blob_service_client().credential.account_key,
+        account_key=blob_service_client.credential.account_key,
         permission=BlobSasPermissions(read=True),
         expiry=datetime.utcnow() + timedelta(hours=1),
     )
 
     # Constructing the full SAS URL for the blob
-    sas_url = f"https://{get_azure_container_client(constants.DEFAULT_BLOB_CONTAINER).account_name}.blob.core.windows.net/{constants.DEFAULT_BLOB_CONTAINER}/{blob_path}?{sas_token}"
+    sas_url = f"https://{account_name}.blob.core.windows.net/{constants.DEFAULT_BLOB_CONTAINER}/{blob_path}?{sas_token}"
 
     return sas_url
 

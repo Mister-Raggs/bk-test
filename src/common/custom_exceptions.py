@@ -1,6 +1,7 @@
-"""
-    This module contains the list of all custom exceptions for Citadel IDP
-"""
+class CitadelIDPProcessingException(Exception):
+    """
+    Generic Citadel IDP Exception to be raised for any high level processing failures.
+    """
 
 
 class CitadelIDPBackendException(Exception):
@@ -42,4 +43,10 @@ class BlobMissingException(CitadelIDPBackendException):
 class JobExecutionException(CitadelIDPBackendException):
     """
     Exception to be raised when a folder is expected to be present but doesn't exist.
+    """
+
+
+class NoInputBlobsForProcessingException(CitadelIDPBackendException):
+    """
+    Exception to be raised when no documents are found in db for exception.
     """

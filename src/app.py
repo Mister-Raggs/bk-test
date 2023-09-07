@@ -1,6 +1,7 @@
 import os
 from time import sleep
 import dotenv
+from common.utils import configure_database
 from common import logging_config, config_reader
 from jobs import job_scheduler_factory
 
@@ -28,7 +29,11 @@ def main():
     config_reader.read_config(app_env, app_base_dir)
 
     # --------------------------------------------------
-    # STEP 4: schedule jobs
+    # STEP 4: make mongodb connection
+    configure_database()
+
+    # --------------------------------------------------
+    # STEP 5: schedule jobs
     app_jobs_scheduler = job_scheduler_factory.collect_and_schedule_jobs()
 
     logger.info("App bootstrap completed successfully.")
