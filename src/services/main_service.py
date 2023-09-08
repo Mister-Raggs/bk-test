@@ -31,8 +31,8 @@ def start_flow():
         if use_azure_blog_storage:
             try:
                 processed_files_list = input_blob_handler.handle_input_blob_process()
-            except NoInputBlobsForProcessingException as nibp:
-                raise CitadelIDPBackendException(nibp) from nibp
+            except NoInputBlobsForProcessingException as nibpe:
+                raise CitadelIDPBackendException(nibpe) from nibpe
             except ContainerMissingException as cme:
                 raise CitadelIDPBackendException(cme) from cme
             except BlobMissingException as bme:
