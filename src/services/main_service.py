@@ -6,8 +6,9 @@ from common.custom_exceptions import (
     CitadelIDPBackendException,
     ContainerMissingException,
     BlobMissingException,
+    NoInputBlobsForProcessingException,
 )
-from services import blob_handler
+from services import input_blob_handler
 
 
 def start_flow():
@@ -22,13 +23,16 @@ def start_flow():
     processed_files_list = []
 
     if env.lower() == "local" or env.lower() == "prod":
-        use_azure_blog_storage = True
         if config_reader.config_data.has_option("Main", "use-azure-blog-storage"):
             use_azure_blog_storage = config_reader.config_data.getboolean("Main", "use-azure-blog-storage")
+        else:
+            use_azure_blog_storage = True
 
         if use_azure_blog_storage:
             try:
-                processed_files_list = blob_handler.check_and_process_blob_storage()
+                processed_files_list = input_blob_handler.handle_input_blob_process()
+            except NoInputBlobsForProcessingException as nibpe:
+                raise CitadelIDPBackendException(nibpe) from nibpe
             except ContainerMissingException as cme:
                 raise CitadelIDPBackendException(cme) from cme
             except BlobMissingException as bme:
