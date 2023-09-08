@@ -114,6 +114,8 @@ class InputBlob(BaseModel):
     validation_successful_blob_path = me.StringField()
     validation_successful_blob_url = me.URLField()
 
+    form_recognizer_model_id = me.StringField()
+
     in_progress_blob_path = me.StringField()
     in_progress_blob_sas_url = me.URLField()
     in_progress_blob_url = me.URLField()
@@ -124,9 +126,6 @@ class InputBlob(BaseModel):
     failed_blob_path = me.StringField()
     failed_blob_url = me.URLField()
 
-    # if filed is picked for validation
-    is_picked_for_validation = me.BooleanField(required=False, default=False)
-
     # is_uploaded mean blob is uploaded ot Azure storage.
     is_uploaded = me.BooleanField(required=True, default=True)
 
@@ -135,9 +134,6 @@ class InputBlob(BaseModel):
 
     # is_validation_successful mean if validation was successful or not
     is_validation_successful = me.BooleanField(required=True, default=False)
-
-    # if file is been picked for Analysis
-    is_picked_for_analysis = me.BooleanField(required=False, default=False)
 
     # is_processing_for_data mean backend has moved it to in progress but not processed yet.
     is_processing_for_data = me.BooleanField(required=True, default=False)
@@ -160,8 +156,8 @@ class InputBlob(BaseModel):
     metadata = me.EmbeddedDocumentField(MetaData, required=True)
     lifecycle_status_list = me.ListField(me.EmbeddedDocumentField(LifecycleStatus), required=True)
 
+    #
     json_output = me.EmbeddedDocumentField(ResultJsonMetaData, required=False)
-    form_recognizer_model_id = me.StringField()
 
     meta = {
         "collection": "input_document_blobs",
@@ -210,10 +206,8 @@ class InputBlob(BaseModel):
             + f", failed_blob_path='{self.failed_blob_path}'"
             + f", failed_blob_url='{self.failed_blob_url}'"
             + f", is_uploaded='{self.is_uploaded}'"
-            + f", is_picked_for_validation='{self.is_picked_for_validation}'"
             + f", is_processed_for_validation='{self.is_processed_for_validation}'"
             + f", is_validation_successful='{self.is_validation_successful}'"
-            + f", is_picked_for_analysis='{self.is_picked_for_analysis}'"
             + f", is_processing_for_data='{self.is_processing_for_data}'"
             + f", is_processed_for_data='{self.is_processed_for_data}'"
             + f", is_processed_success='{self.is_processed_success}'"
