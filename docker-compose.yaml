@@ -1,0 +1,20 @@
+version: '3.2'
+services:
+  backend:
+    image: citadel:bktest
+    container_name: suspicious-curran
+    # environment:
+    env_file:
+      - ./config-files/local-docker/bk.env
+
+    volumes:
+      - ./config-files:/app/config-files
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite # Use the official Azurite image
+    container_name: blobcontainer
+    # environment:
+    env_file:
+      - ./config-files/local-docker/azr.env
+
+ 
