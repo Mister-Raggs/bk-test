@@ -4,7 +4,7 @@ from datetime import datetime
 from services.main_service import start_flow
 
 SCHEDULE_INTERVAL_IN_SECONDS = 4
-JOB_NAME = "DOCUMENT-PROCESSING-JOB"
+JOB_NAME = "JOB-DOCUMENT-PROCESSING"
 
 
 # function name needs to be job_task for automated picking.
