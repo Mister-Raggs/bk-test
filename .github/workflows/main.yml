@@ -3,7 +3,8 @@ name: CI Build Workflow
 on: [push]
 
 jobs:
-  build:
+  ci-build:
+    name: CI Build
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -25,18 +26,47 @@ jobs:
     - name: Analysing the code with pylint
       run: |
         pylint $(git ls-files '*.py' | grep -v "dummy") || true
-
-  # test:
-  # runs on: ubuntu-latest
-  #   steps:
-  #   - uses: 
-  #   - name: Run Test Cases
-  #     run: 
-
-  docker:
+  
+    - name: Build the Docker Image
+      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+  
+  run-tests:
+    name: Run Tests
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+    - name: Sleep and Run
+      run: |
+        echo "Sleeping for 3"
+        sleep 3
+
+  
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-flags: --debug
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: vireshwali@gmail.com
+          password: qqq123456
+      
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: test/app:latest
+  
   
