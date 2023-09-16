@@ -24,7 +24,7 @@ jobs:
         
     - name: Analysing the code with pylint
       run: |
-        git ls-files '*.py' | grep -V "dummy"
+        pylint $(git ls-files '*.py' | grep -v "dummy") || true
 
   # test:
   # runs on: ubuntu-latest
