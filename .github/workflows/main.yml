@@ -61,7 +61,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           username: vireshwali@gmail.com
-          password: qqq123456
+          password: dckr_pat_s-gXRLJadJLRE1XRV1OGxpoVRW4
       
       - name: Build and push
         uses: docker/build-push-action@v5
@@ -69,6 +69,6 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: test/app:latest
+          tags: vireshwali/citadel-idp-frontend:latest
   
   
