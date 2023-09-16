@@ -67,6 +67,6 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: vireshwali/citadel-idp-frontend:latest
+          tags: vireshwali/test-21:latest
   
   
