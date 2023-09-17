@@ -8,7 +8,7 @@ on:
       - completed
   push:
     branches: main
-
+    
 jobs:
   docker-build:
     name: Docker Build
@@ -20,16 +20,14 @@ jobs:
         run: |
           if [ "${{ github.event.workflow_run.conclusion }}" != "success" ]; then
             echo "The triggering workflow 'CI Build Workflow' did not succeed. Skipping this workflow run."
-            exit 0
+            exit 1
           fi
       
       - name: Check if this event is a merged pull request
         run: |
           if [ "${{ github.event.workflow_run.event }}" != "pull_request" ] || [ "${{ github.event.workflow_run.pull_request.merged }}" != "true" ]; then
-            echo "The triggering event is not a merged pull request. Skipping this workflow run." 
-            # exit 0
-            gh run cancel ${{ github.run_id }}
-            gh run watch ${{ github.run_id }}
+            echo "The triggering event is not a merged pull request. Skipping this workflow run."
+            exit 1
           fi
 
       - name: Checkout
