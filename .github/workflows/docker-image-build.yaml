@@ -1,0 +1,45 @@
+name: CI Build Workflow
+
+on:
+  pull_request:
+  push:
+    branches: main
+  workflow_run:
+    workflows: [CI Build Workflow]
+    types:
+      - completed
+
+jobs:
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          buildkitd-flags: --debug
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: poonamsabharwal
+          password: dckr_pat_J61TsbBzpwqA4zOGTvtuiuvRprg
+      
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: poonamsabharwal/citadel-idp-frontend:latest
+  
+  
