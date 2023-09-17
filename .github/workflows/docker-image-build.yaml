@@ -1,4 +1,4 @@
-name: CI Build Workflow
+name: Docker Image Build
 
 on:
   pull_request:
