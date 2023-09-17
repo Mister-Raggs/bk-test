@@ -30,7 +30,7 @@ jobs:
         # Need to add true at the end as pylint will fail right now due to static code analysis findings
         pylint $(git ls-files '*.py' | grep -v "dummy") || true
 
-        
+
   run-tests:
     name: Run Tests
     runs-on: ubuntu-latest
@@ -56,6 +56,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          # list of Docker images to use as base name for tags
+          images: |
+            poonamsabharwal/citadel-idp-frontend
+          # generate Docker tags based on the following events/attributes
+          tags: |
+            type=semver,enable=true,value={{sha}}-{{date 'YYYYMMDD-HHmmss' tz='UTC'}}
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       
@@ -77,5 +88,6 @@ jobs:
           file: ./Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: poonamsabharwal/citadel-idp-frontend:latest
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
     
