@@ -63,10 +63,11 @@ jobs:
           # list of Docker images to use as base name for tags
           images: |
             poonamsabharwal/citadel-idp-frontend
-          # generate Docker tags based on the following events/attributes
+          # generate Docker tags 
+          # TODO: need to add condition later about when to build the docker tag "latest". Dont want ot build it for every docker push
           tags: |
-            type=raw,enable=true,value={{ sha }}-{{ date 'YYYYMMDD-HHmmss' tz='UTC' }}
-          #type=raw,enable=true,value=latest
+            type=raw,enable=true,value=sha-{{ sha }}_build-{{ date 'YYYYMMDD-HHmmss' tz='UTC' }}
+            
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
