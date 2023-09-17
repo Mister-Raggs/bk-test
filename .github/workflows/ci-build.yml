@@ -72,7 +72,7 @@ jobs:
             latest=true
           # generate Docker tags
           tags: |
-            type=raw,enable=true,value=sha-${GITHUB_SHA}_build-{{ date 'YYYYMMDD-HHmmss' tz='UTC' }}     
+            type=raw,enable=true,value=sha-{{ sha }}_build-{{ date 'YYYYMMDD-HHmmss' tz='UTC' }}     
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
