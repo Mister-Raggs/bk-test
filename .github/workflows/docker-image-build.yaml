@@ -1,15 +1,9 @@
 name: Docker Image Build
 
 on:
-  pull_request:
-    branches: 
-      - main
-    types: [closed]
-  push:
-    branches: main
-  
   workflow_run:
     workflows: [CI Build Workflow]
+    branches: [main]
     types:
       - completed
 
@@ -20,6 +14,20 @@ jobs:
     strategy:
       fail-fast: false
     steps:
+      - name: Check if the CI-Build workflow was successful
+        run: |
+          if [ "${{ github.event.workflow_run.conclusion }}" != "success" ]; then
+            echo "The triggering workflow 'CI Build Workflow' did not succeed. Skipping this workflow run."
+            exit 0
+          fi
+      
+      - name: Check if this event is a merged pull request
+        run: |
+          if [ "${{ github.event.workflow_run.event }}" != "pull_request" ] || [ "${{ github.event.workflow_run.pull_request.merged }}" != "true" ]; then
+            echo "The triggering event is not a merged pull request. Skipping this workflow run."
+            exit 0
+          fi
+
       - name: Checkout
         uses: actions/checkout@v3
       
