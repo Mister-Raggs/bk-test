@@ -65,7 +65,8 @@ jobs:
             poonamsabharwal/citadel-idp-frontend
           # generate Docker tags based on the following events/attributes
           tags: |
-            type=semver,enable=true,value={{ sha }}-{{ date 'YYYYMMDD-HHmmss' tz='UTC' }},pattern={{raw}}
+            type=raw,enable=true,value={{ sha }}-{{ date 'YYYYMMDD-HHmmss' tz='UTC' }}
+          #type=raw,enable=true,value=latest
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
